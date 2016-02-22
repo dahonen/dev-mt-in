@@ -1,35 +1,45 @@
 angular.module('devMtIn')
-.controller('homeCtrl', function($scope, profileService) {
+    .controller('homeCtrl', function($scope, profileService) {
 
-$scope.myProfile = profileService.checkForProfile();
+        profileService.serviceTest();
 
+        $scope.sortOptions = [{
+            display: 'Ascending',
+            value: false
+        }, {
+            display: 'Descending',
+            value: true
+        }];
 
+        $scope.editing = false;
 
+        $scope.saveProfile = function(profile) {
+            profileService.saveProfile(profile);
+            $scope.editing = false;
+        };
 
-profileService.serviceTest();
+        $scope.deleteProfile = function() {
+            profileService.deleteProfile()
+            .then(function(deleteProfile) {
+            	localStorage.removeItem('profileId');
+            	$scope.myProfile = {};
+            })
+            .catch(function(err){
+            	console.error(err);
+            });
+         
+        }
 
-$scope.sortOptions = [{
-	display: 'Ascending'
-  , value: false
-  },
-  {
-	display: 'Descending'
-  , value: true	
-  }
-];
+        $scope.checkForProfile = function() {
+            var profileId = JSON.parse(localStorage.getItem('profileId'));
+            if (profileId) {
+                profileService.checkForProfile(profileId.profileId)
+                    .then(function(profile) {
+                        $scope.myProfile = profile.data;
+                    }).catch(function(err) {
+                        console.log('Error getting data from controller', err);
+                    });
+            }
+        }
 
-$scope.editing = false;
-
-$scope.saveProfile = function(profile) {
-	profileService.saveProfile(profile);
-	$scope.editing = false;
-};
-
-$scope.deleteProfile = function(profile) {
-	profileService.deleteProfile(profile);
-	$scope.myProfile = profileService.checkForProfile();
-}
-
-});
-
-
+    });

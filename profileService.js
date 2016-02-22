@@ -1,30 +1,46 @@
 angular.module('devMtIn')
-.service('profileService', function() {
+    .service('profileService', function($http) {
 
-this.serviceTest = function() {
-  console.log('profileService is connected!');
-};
+        this.serviceTest = function() {
+            console.log('profileService is connected!');
+        };
 
-this.saveProfile = function(profile) {
-	localStorage.setItem('profile', JSON.stringify(profile));
-	console.log(localStorage.profile);
-};
+        var baseUrl = 'http://connections.devmounta.in/'
 
-this.deleteProfile = function(profile) {
-	localStorage.removeItem('profile');
-	console.log(localStorage.profile);
-}
+        this.saveProfile = function(profile) {
+            return $http({
+                    method: 'POST' // Request method.
+                    ,
+                    url: baseUrl + 'api/profiles/' // URL we are making the request to.
+                    ,
+                    data: profile // The data we are requesting be posted.
+                })
+                .then(function(profileResponse) { // What to do after a response comes back from the server.
+                    localStorage.setItem('profileId', JSON.stringify({
+                        profileId: profileResponse.data._id
+                    })); // Save our unique _id to local storage
+                    console.log(profileResponse);
+                })
+                .catch(function(err) {
+                    console.error(err);
+                });
+        }
 
-this.checkForProfile = function() {
-	if (localStorage.getItem('profile')) {
-		return JSON.parse(localStorage.getItem('profile'));
+        this.deleteProfile = function() {
+            var profileId = JSON.parse(localStorage.getItem('profileId')).profileId;
+            
+            return $http({
+                method: 'DELETE'
+                ,url: baseUrl + 'api/profiles/' + profileId
+            });
+        }
 
-	};
-	return {
-		friends: [{name: 'Chris'}, {name: 'David'}, {name: 'Nick'}, {name: 'Braiden'}, {name: 'Josh'}, {name: 'Todd'}]
+        this.checkForProfile = function(profileId) {
+            return $http({
+                method: 'GET',
+                url: baseUrl + 'api/profiles/' + profileId
+            })
+        }
 
-	}
-}
 
-
-});
+    });
